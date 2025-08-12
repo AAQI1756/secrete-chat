@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    body {
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #7d5fff, #01cdfe, #ff71ce);
+        background-size: 400% 400%;
+        animation: gradientBG 8s ease infinite;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    .login-container {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 40px;
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        text-align: center;
+        width: 90%;
+        max-width: 350px;
+        animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    h2 {
+        color: white;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+    input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: none;
+        border-radius: 8px;
+        outline: none;
+        font-size: 16px;
+    }
+    input:focus {
+        box-shadow: 0 0 8px #ff71ce;
+    }
+    button {
+        background: #ff71ce;
+        color: white;
+        padding: 12px;
+        width: 100%;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    button:hover {
+        background: #ff4ec3;
+        transform: scale(1.05);
+    }
+    .error {
+        color: #fff;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+</style>
+</head>
+<body>
+    <div class="login-container" id="login-box">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Sign In</button>
+        <div class="error" id="error-msg"></div>
+    </div>
+
+<script>
+const USERS = [
+    { username: "03040102282", password: "3230" },
+    { username: "alex01", password: "pass123" },
+    { username: "janeDoe", password: "qwerty" },
+    { username: "mike77", password: "abc123" },
+    { username: "saraK", password: "mypwd" }
+];
+
+const ONE_MINUTE = 60000;
+const ONE_DAY = 24 * 60 * 60 * 1000;
+
+// Check login on load
+(function checkLoginStatus(){
+    const loginData = JSON.parse(localStorage.getItem("loginData"));
+    if (loginData) {
+        const now = Date.now();
+        const activeMinutes = loginData.activeMinutes || 0;
+        if (now - loginData.loginTime > ONE_DAY && activeMinutes < 1) {
+            localStorage.removeItem("loginData");
+        } else {
+            window.location.href = "/main.html";
+        }
+    }
+})();
+
+function login() {
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+    const errorMsg = document.getElementById("error-msg");
+
+    const validUser = USERS.find(u => u.username === user && u.password === pass);
+
+    if (validUser) {
+        const loginData = {
+            username: user,
+            loginTime: Date.now(),
+            lastActive: Date.now(),
+            activeMinutes: 0
+        };
+        localStorage.setItem("loginData", JSON.stringify(loginData));
+        errorMsg.style.color = "#0f0";
+        errorMsg.textContent = "Login successful! Redirecting...";
+        setTimeout(() => {
+            window.location.href = "/main.html";
+        }, 1000);
+    } else {
+        errorMsg.style.color = "#ff0";
+        errorMsg.textContent = "Invalid username or password!";
+    }
+}
+
+// Track active minutes (per user)
+let activeSeconds = 0;
+setInterval(() => {
+    const loginData = JSON.parse(localStorage.getItem("loginData"));
+    if (loginData) {
+        activeSeconds += 5;
+        if (activeSeconds >= 60) {
+            loginData.activeMinutes += 1;
+            loginData.lastActive = Date.now();
+            localStorage.setItem("loginData", JSON.stringify(loginData));
+            activeSeconds = 0;
+        }
+    }
+}, 5000);
+</script>
+</body>
+</html>
